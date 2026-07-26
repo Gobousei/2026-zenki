@@ -3,488 +3,573 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>外科学概論 過去問出題系統樹</title>
+    <title>周産期医学 過去問系統樹・出題マップ</title>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- PapaParse for parsing CSV -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --badge-multi: #2b6cb0;
+            --badge-single: #d69e2e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             line-height: 1.6;
-            color: #333;
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 0 15px;
-            background-color: #f8f9fa;
-        }
-        h1 {
-            text-align: center;
-            color: #1a365d;
-            border-bottom: 2px solid #2b6cb0;
-            padding-bottom: 10px;
-            margin-bottom: 30px;
-        }
-        details {
-            background: #ffffff;
-            border: 1px solid #cbd5e0;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
-        }
-        details[open] {
-            border-color: #3182ce;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        summary {
-            padding: 15px;
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #2d3748;
-            cursor: pointer;
-            background-color: #edf2f7;
-            border-radius: 5px;
-            list-style: none;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        summary::-webkit-details-marker {
-            display: none;
-        }
-        summary::after {
-            content: "＋";
-            font-size: 1.2em;
-            color: #4a5568;
-        }
-        details[open] summary::after {
-            content: "－";
-        }
-        summary:hover {
-            background-color: #e2e8f0;
-        }
-        .content {
             padding: 20px;
-            border-top: 1px solid #e2e8f0;
         }
-        .timeline {
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 24px 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        header p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        /* Controls / Search Bar */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            background: white;
+            padding: 16px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px 10px 38px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--secondary);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+        }
+
+        .stats-summary {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-left: auto;
+        }
+
+        /* Accordion Container */
+        .accordion-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .accordion-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .accordion-item:hover {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+            border-color: #cbd5e1;
+        }
+
+        .accordion-header {
+            padding: 14px 20px;
+            background: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+            transition: background-color 0.15s;
+        }
+
+        .accordion-header:hover {
+            background-color: #f8fafc;
+        }
+
+        .header-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .lineage-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+            color: white;
+            white-space: nowrap;
+            background-color: var(--badge-multi);
+        }
+
+        .lineage-badge.single {
+            background-color: var(--badge-single);
+        }
+
+        .lineage-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .header-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .year-tags-summary {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .mini-year-tag {
+            font-size: 0.75rem;
+            background: #edf2f7;
+            color: #4a5568;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .toggle-icon {
+            color: var(--text-muted);
+            transition: transform 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .accordion-item.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Accordion Body */
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #fafbfc;
+            border-top: 1px solid transparent;
+        }
+
+        .accordion-item.active .accordion-body {
+            border-top-color: var(--border-color);
+        }
+
+        .accordion-content {
+            padding: 16px 20px;
+        }
+
+        /* Timeline / Chain Flow inside Accordion */
+        .chain-timeline {
             position: relative;
             padding-left: 20px;
-            border-left: 3px solid #63b3ed;
+            border-left: 2px solid #cbd5e1;
+            margin-left: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
-        .year-block {
-            margin-bottom: 20px;
+
+        .timeline-node {
             position: relative;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
-        .year-block::before {
-            content: "";
+
+        .timeline-node::before {
+            content: '';
             position: absolute;
             left: -27px;
-            top: 5px;
-            width: 11px;
-            height: 11px;
+            top: 18px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background-color: #3182ce;
-            border: 2px solid #fff;
+            background: var(--secondary);
+            border: 2px solid white;
+            box-shadow: 0 0 0 2px var(--secondary);
         }
-        .year-title {
-            font-weight: bold;
-            color: #2b6cb0;
-            margin-bottom: 5px;
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
         }
-        .question-text {
-            background-color: #f7fafc;
-            border-left: 3px solid #cbd5e0;
-            padding: 10px 12px;
-            white-space: pre-wrap;
-            font-family: monospace, sans-serif;
-            font-size: 0.95em;
+
+        .node-year {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--secondary);
+            background: #ebf8ff;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .node-qnum {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .node-text {
+            font-size: 0.92rem;
             color: #2d3748;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
-        .no-data {
-            color: #a0aec0;
-            font-style: italic;
+
+        /* Highlight Search match */
+        mark {
+            background-color: #fef08a;
+            color: #854d0e;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            body { padding: 10px; }
+            header { padding: 16px 20px; }
+            header h1 { font-size: 1.4rem; }
+            .accordion-header { padding: 12px 14px; }
+            .header-meta { display: none; }
+            .chain-timeline { margin-left: 5px; padding-left: 15px; }
+            .timeline-node::before { left: -22px; }
         }
     </style>
 </head>
 <body>
 
-    <h1>外科学概論（前期）過去問出題系統樹</h1>
+<div class="container">
+    <header>
+        <h1><i class="fa-solid fa-sitemap"></i> 外科学概論 過去問系統樹</h1>
+        <p>10年分の過去問から出題系統・関連問題を自動分類したデータベースです。</p>
+    </header>
 
-    <details>
-        <summary>系統 1：近代外科（医学）の発展における重要要素（継続出題：8年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2014年（平成26年）</div>
-                    <div class="question-text">問４ 以下の問に答えよ
-2） 近代外科の発展において欠かせない重要項目を 2 つ挙げよ</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2015年（平成27年）</div>
-                    <div class="question-text">2. 近代外科の発展において欠かせない重要項目（事項）を 2つ挙げ、内容を説明せよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2016年（平成28年）</div>
-                    <div class="question-text">問 1 近代外科の発展につながるものを二つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2017年（平成29年）</div>
-                    <div class="question-text">問 1 近代外科の発展につながるものを二つ答えよ。(福本)</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2018年（平成30年）</div>
-                    <div class="question-text">1. 近代外科学の発展において欠かせない重要な要素は何か?2 つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2019年（令和元年）</div>
-                    <div class="question-text">問 1 近代外科の発展につながるものを二つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2021年（令和3年）</div>
-                    <div class="question-text">1．近代外科の発展につながるものを２つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2022年（令和4年）</div>
-                    <div class="question-text">１．近代外科の発展につながるものを二つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2023年（令和5年）</div>
-                    <div class="question-text">1. 近代外科の発展につながるものを⼆つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2024年（令和6年）</div>
-                    <div class="question-text">1. 近代医学の発展における重要な要素を 2 つ答えよ</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2025年（令和7年）</div>
-                    <div class="question-text no-data">該当なし</div>
-                </div>
-            </div>
+    <div class="controls">
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="キーワード・疾患名・年度（例: COPD, 糖尿病, 2025）で検索...">
         </div>
-    </details>
+        <button class="btn btn-outline" id="expandAllBtn"><i class="fa-solid fa-angles-down"></i> すべて開く</button>
+        <button class="btn btn-outline" id="collapseAllBtn"><i class="fa-solid fa-angles-up"></i> すべて閉じる</button>
+        <div class="stats-summary" id="statsSummary">全 0 系統</div>
+    </div>
 
-    <details>
-        <summary>系統 2：損傷の定義（継続出題：7年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2015年（平成27年）</div>
-                    <div class="question-text">1. 損傷の定義を答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2018年（平成30年）</div>
-                    <div class="question-text">2. 損傷の定義を記せ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2019年（令和元年）</div>
-                    <div class="question-text">問 3 損傷の定義を記せ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2022年（令和4年）</div>
-                    <div class="question-text">２．損傷の定義を示せ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2023年（令和5年）</div>
-                    <div class="question-text">3. 損傷の定義を⽰せ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2024年（令和6年）</div>
-                    <div class="question-text">2. 損傷の定義について述べよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2025年（令和7年）</div>
-                    <div class="question-text">1. 損傷の定義について述べよ。</div>
-                </div>
-            </div>
-        </div>
-    </details>
+    <!-- Hidden HTML File Input for custom CSV loading if needed -->
+    <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #64748b;">
+        <span><i class="fa-solid fa-file-csv"></i> 読み込み元: <code>Surgeryintroduction_exam_lineage.csv</code></span>
+        <label for="csvFileInput" style="text-decoration: underline; cursor: pointer; color: var(--secondary);">[ 別のCSVを選択 ]</label>
+        <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+    </div>
 
-    <details>
-        <summary>系統 3：SSI（手術部位感染）の防止対策・危険因子（継続出題：7年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2015年（平成27年）</div>
-                    <div class="question-text">3. SSIの危険因子を 5つ挙げ、説明せよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2016年（平成28年）</div>
-                    <div class="question-text">問 3 SSIを防ぐために消化器外科医が行っていることを列挙せよ。
-問 4 SSIの予防対策を 5つ書け。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2017年（平成29年）</div>
-                    <div class="question-text">問 3 SSIを防ぐために消火器外科医が行っていることを列挙せよ。(尾崎・徳安)
-問 4 SSIの予防対策を 5つ書け。(尾崎・徳安)</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2018年（平成30年）</div>
-                    <div class="question-text">3. SSI(surgical site infection)の防止のために行っていることを 5 つ挙げよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2019年（令和元年）</div>
-                    <div class="question-text">問 4 SSI(surgical site infection)の防止のために行う予防抗菌薬の適切な投与時期はいつか</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2021年（令和3年）</div>
-                    <div class="question-text">3. SSI の防止のために行っていることを 5 つ挙げよ</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2022年（令和4年）</div>
-                    <div class="question-text">４．SSIの防止対策を 5個以上述べよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2023年（令和5年）</div>
-                    <div class="question-text">4. SSI の防⽌対策について 5 つ以上述べよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2024〜2025年</div>
-                    <div class="question-text no-data">該当なし</div>
-                </div>
-            </div>
-        </div>
-    </details>
+    <div class="accordion-list" id="accordionList">
+        <!-- Accordion items will be dynamically generated by JS -->
+    </div>
+</div>
 
-    <details>
-        <summary>系統 4：小児外科と成人外科の診療の違い・特徴（継続出題：8年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2016・2017年</div>
-                    <div class="question-text">一般に小児外科で診療されている疾患で、「閉鎖」または「狭窄」が含まれているものを答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2018年（平成30年）</div>
-                    <div class="question-text">6. 小児外科学に関する問題です。 一般に小児外科で診療されている疾患の中から、消化管領域(口〜肛門)の疾患を 5 つ挙げて下さい。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2019年（令和元年）</div>
-                    <div class="question-text">問 6 小児外科の診療内容について成人外科との違いを留意しながら 100〜150 字程度で説明しなさい。疾患名について不正確な場合は加点しない。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2021年（令和3年）</div>
-                    <div class="question-text">5. 成人への診療と比較して、小児外科の診療にはどのような特徴があるか。200 字以内で答えよ。(具体的な疾患名を用いる際には、正確なものでないと加点しないことがあるので注意すること。)</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2022年（令和4年）</div>
-                    <div class="question-text">５．小児外科の診療内容について成人外科との違いを留意しながら 150 字以内で説明しなさい。疾患名について不正確な場合は加点しない。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2023年（令和5年）</div>
-                    <div class="question-text">5. ⼩児外科の診療内容について成⼈外科との違いを留意しながら 150 字以内で説明しなさい。疾患名について不正確な場合は加点しない。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2024年（令和6年）</div>
-                    <div class="question-text">5. 小児外科の診療内容について、成人外科との違いに着目しながら 150 字以内で説明せよ。 具体的な疾患名を挙げて説明する場合、誤った疾患名だと加点にならない可能性がある。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2025年（令和7年）</div>
-                    <div class="question-text">3. 小児外科の診療内容について、成人外科との違いに着目しながら 200 字以内で説明せよ。具体的な疾患名を挙げて説明する場合、誤った疾患名だと加点にならない可能性がある。</div>
-                </div>
-            </div>
-        </div>
-    </details>
+<script>
+    // Global variable to store parsed CSV data
+    let lineageMap = new Map();
+    let isAllExpanded = false;
 
-    <details>
-        <summary>系統 5：ショックの分類と原因疾患・物質（継続出題：7年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2013年（平成25年）</div>
-                    <div class="question-text">6. 循環血液量減少性ショックと心原性ショックの疾患名について 2つずつ挙げよ。また、アナフィラキシーショックの原因物質について 1つ挙げよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2015年（平成27年）</div>
-                    <div class="question-text">6. 心原性ショックの原因疾患を 2 つ、閉塞性ショックの原因疾患を 1 つ、循環血液減少 性ショックの原因疾患を 1つ、アナフィラキシーショックの原因物質を一つ書け。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2016・2017年</div>
-                    <div class="question-text">心原性ショックの原因疾患 1つ、閉塞性ショックの原因疾患 2つ、循環血液量減少性ショックの原因疾患 1つ、アナフィラキシーショックの原因物質 1つ答えよ</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2018年（平成30年）</div>
-                    <div class="question-text">7. 以下の問いに答えよ。 循環血液量減少性ショック、心原性ショックの原因疾患をそれぞれ 2 つずつ、またアナフィラキシーショックの原因物質を 1 つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2019年（令和元年）</div>
-                    <div class="question-text">問 7 以下の問いに答えよ。 循環血液量減少性ショック、心原性ショックの原因疾患をそれぞれ 2 つずつ、またアナフィラキシーショックの原因物質を 1 つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2021年（令和3年）</div>
-                    <div class="question-text">6. 循環血液量減少性ショック、心原性ショックの原因疾患をそれぞれ 2 つずつ、またアナ フィラキシーショックの原因物質を 1 つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2023年（令和5年）</div>
-                    <div class="question-text">7. （１）循環⾎液量減少性ショック、（２）⼼原性ショックの原因疾患をそれぞれ 2 つずつ、 また（３）アナフィラキシーショックの原因物質を 1 つ答えよ。</div>
-                </div>
-            </div>
-        </div>
-    </details>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Automatically attempt to fetch the local CSV file
+        fetchCSV("Surgeryintroduction_exam_lineage.csv");
 
-    <details>
-        <summary>系統 6：輸血の副作用・血液量・輸血種類（継続出題：6年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2015年（平成27年）</div>
-                    <div class="question-text">9. (1)基本の輸液を 4 つ列挙せよ。(2)通常成人の体重に対する血液量は何パーセントか。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2016・2017年</div>
-                    <div class="question-text">輸血 4種類を列挙せよ。血液は体重の何％か書け。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2021年（令和3年）</div>
-                    <div class="question-text">2．輸血の副作用について述べよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2022年（令和4年）</div>
-                    <div class="question-text">３．輸血の副作用について述べよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2023年（令和5年）</div>
-                    <div class="question-text">2. 輸⾎の副作⽤について述べよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2024年（令和6年）</div>
-                    <div class="question-text">3. 輸血の副作用について述べよ輸血の副作用について述べよ</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2025年（令和7年）</div>
-                    <div class="question-text">4. 輸血の副作用について述べよ。</div>
-                </div>
-            </div>
-        </div>
-    </details>
+        // Event listeners
+        document.getElementById("searchInput").addEventListener("input", filterAccordions);
+        document.getElementById("expandAllBtn").addEventListener("click", () => toggleAll(true));
+        document.getElementById("collapseAllBtn").addEventListener("click", () => toggleAll(false));
+        document.getElementById("csvFileInput").addEventListener("change", handleFileSelect);
+    });
 
-    <details>
-        <summary>系統 7：甲状腺癌の組織型・治療・副甲状腺（継続出題：6年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2013年（平成25年）</div>
-                    <div class="question-text">9.甲状腺癌について種類と特徴を述べよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2019年（令和元年）</div>
-                    <div class="question-text">問 8 1.甲状腺癌のうちに、約 9割を占める組織型は(①)である。
-2.分化型の甲状腺癌の治療は(②)が基本である。
-3.副甲状腺ホルモンは(③)の代謝を調節...</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2021年（令和3年）</div>
-                    <div class="question-text">7. 以下の空白に当てはまる語句を記述せよ。
-甲状腺癌のうち、約９割を占める組織型は 1.___である。
-分化型の甲状腺癌の治療は 2.____が基本である。
-甲状腺未分化癌の予後は 3.____である。
-甲状腺ホルモンは４.____の代謝を調節する。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2023年（令和5年）</div>
-                    <div class="question-text">8. 以下の問いに答えよ。
-（１）甲状腺癌のうちに、約 9 割を占める組織型は（①）である。
-（２）分化型の甲状腺癌の治療は（②）が基本である。
-（３）副甲状腺ホルモンは（③）の代謝を調節する。
-（４）続発性副甲状腺機能亢進症の原因疾患は（④）が⼤半を占める。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2024年（令和6年）</div>
-                    <div class="question-text">7. (4) 続発性副甲状腺機能亢進症の原因疾患は（④）が⼤半を占める。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2025年（令和7年）</div>
-                    <div class="question-text">6.甲状腺癌の 5つの組織型を挙げよ。
-7.甲状腺がんの組織型を 5 つ書きなさい。</div>
-                </div>
-            </div>
-        </div>
-    </details>
+    function fetchCSV(filename) {
+        Papa.parse(filename, {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                processData(results.data);
+            },
+            error: function(err) {
+                console.warn("Auto-fetch failed (might be CORS if opened as local file). Waiting for manual file select if needed.", err);
+            }
+        });
+    }
 
-    <details>
-        <summary>系統 8：LVAD（左室補助人工心臓）の使用目的・心臓外科関連（継続出題：5年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2013・2014年</div>
-                    <div class="question-text">LVADは薬物療法、心臓再同期 内科学的な治療に無効な末期心不全の治療に有効である。LVADの使用目的について 5 つあるうちの 3つを列挙し、内容について簡潔に説明せよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2015年（平成27年）</div>
-                    <div class="question-text">8. LVADの使用目的について以下に挙げた 2つのものについて、日本語で簡潔に説明せよ。①Bridge to Transplantation(BTT)、 ②Destination Therapy(DT)</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2022年（令和4年）</div>
-                    <div class="question-text">６．LVAD は薬物療法や心臓再同期療法などの内科的治療が無効な末期心不全 患者に対する有効な治療法である。
-（１）①BTT と② DT でLVADを使用する目的を簡潔に日本語で答えよ。
-（２）心臓移植を適応する疾患名を 2つ述べよ。
-７．以下、心臓外科に関する記述です。（大動脈弁置換術、僧帽弁形成術、LVAD等）</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2024年（令和6年）</div>
-                    <div class="question-text">8. 以下、⼼臓外科に関する記述です。括弧に当てはまる⾔葉を答えよ。
-（１） 重症⼤動脈弁狭窄症に対しては⼀般的に⼤動脈弁（①）術が⾏われる
-（２） 重症増帽弁閉鎖不全症の第⼀選択は僧帽弁（②）術である。
-（３） 内科的処置が無効な重症⼼不全に対しては植込み型（③）装着
-（４） 肢を切断しなければならない重症（④）は、下半⾝切除の回避のために遠位⾜部バイパス（distal bypass）を⾏う。</div>
-                </div>
-            </div>
-        </div>
-    </details>
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                processData(results.data);
+            }
+        });
+    }
 
-    <details>
-        <summary>系統 9：生体侵襲・反応（血流確保・血糖値・SIRS）（継続出題：4年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2013年（平成25年）</div>
-                    <div class="question-text">10. 侵襲を受けた後、（）と（）の血流を確保する。
-侵襲を受けると基本的に血糖値は（）する。
-SIRSは次の体温、心拍、（）、（）の 4項目の内 2項目以上満たすものである。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2016・2017年</div>
-                    <div class="question-text">問 8 (1)侵襲を受けた時の生体反応を３つ書け。 (2)侵襲をなるべく少なくする手術を２つ書け。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2021年（令和3年）</div>
-                    <div class="question-text">7. 侵襲の大きい手術ほど、回復は 5.___。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2022年（令和4年）</div>
-                    <div class="question-text">８．以下の括弧内に適切と思われる単語を入れなさい。
-・身体に侵襲がかかった際には、（１）と（２）の血流がまず確保される。</div>
-                </div>
-            </div>
-        </div>
-    </details>
+    function processData(rows) {
+        lineageMap.clear();
 
-    <details>
-        <summary>系統 10：呼吸器外科・気胸・縦隔腫瘍（継続出題：4年分以上）</summary>
-        <div class="content">
-            <div class="timeline">
-                <div class="year-block">
-                    <div class="year-title">2016・2017年</div>
-                    <div class="question-text">問 7 縦隔膜で考えられる腫瘍を三つ以上書け。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2023年（令和5年）</div>
-                    <div class="question-text">6. 以下の問いに答えよ。
-（１）肺癌と悪性胸膜中⽪腫に共通する発癌物質を 1 つ答えよ。
-（２）肺癌を促進させる遺伝⼦変異を 1 つ答えよ
-（３）気胸にかかる⼈の特徴を 1 つ答えよ
-（４）縦隔腫瘍を 2 つ答えよ。</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2024年（令和6年）</div>
-                    <div class="question-text">6. (1) 右肺は₋₋₋葉</div>
-                </div>
-                <div class="year-block">
-                    <div class="year-title">2025年（令和7年）</div>
-                    <div class="question-text">5. 右肺は肺葉が①つあり、左肺は肺葉が②つある。
-③気胸になりやすい患者の特徴を 1 つ。
-④胸腺腫に合併する自己免疫疾患を 1 つ。</div>
-                </div>
-            </div>
-        </div>
-    </details>
+        rows.forEach(row => {
+            const id = row.Lineage_ID;
+            if (!id) return;
 
+            if (!lineageMap.has(id)) {
+                lineageMap.set(id, {
+                    id: id,
+                    theme: row.Theme,
+                    questions: []
+                });
+            }
+
+            lineageMap.get(id).questions.push({
+                year: row.Year,
+                qNum: row.Question_Number,
+                text: row.Question_Text
+            });
+        });
+
+        renderAccordions();
+    }
+
+    function renderAccordions() {
+        const container = document.getElementById("accordionList");
+        container.innerHTML = "";
+
+        const searchKeyword = document.getElementById("searchInput").value.trim().toLowerCase();
+
+        let visibleCount = 0;
+
+        lineageMap.forEach((lineage, id) => {
+            const years = [...new Set(lineage.questions.map(q => q.year))];
+            const isSingle = lineage.questions.length === 1 && years.includes("2025");
+
+            // Create accordion element
+            const item = document.createElement("div");
+            item.className = "accordion-item";
+            item.dataset.id = id;
+
+            // Build timeline nodes HTML
+            const nodesHtml = lineage.questions.map(q => `
+                <div class="timeline-node">
+                    <div class="node-header">
+                        <span class="node-year">${escapeHtml(q.year)}年</span>
+                        <span class="node-qnum">${escapeHtml(q.qNum)}</span>
+                    </div>
+                    <div class="node-text">${highlightText(escapeHtml(q.text), searchKeyword)}</div>
+                </div>
+            `).join("");
+
+            // Year tags
+            const yearBadges = years.map(y => `<span class="mini-year-tag">${y}</span>`).join("");
+
+            item.innerHTML = `
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <div class="header-title-group">
+                        <span class="lineage-badge ${isSingle ? 'single' : ''}">
+                            ${isSingle ? '2025新規' : '系統 ' + id}
+                        </span>
+                        <span class="lineage-title">${highlightText(escapeHtml(lineage.theme), searchKeyword)}</span>
+                    </div>
+                    <div class="header-meta">
+                        <div class="year-tags-summary">${yearBadges}</div>
+                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                    </div>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <div class="chain-timeline">
+                            ${nodesHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(item);
+            visibleCount++;
+        });
+
+        document.getElementById("statsSummary").textContent = `全 ${visibleCount} 系統 (${lineageMap.size} グループ)`;
+    }
+
+    function toggleAccordion(header) {
+        const item = header.parentElement;
+        const body = item.querySelector(".accordion-body");
+        
+        if (item.classList.contains("active")) {
+            item.classList.remove("active");
+            body.style.maxHeight = null;
+        } else {
+            item.classList.add("active");
+            body.style.maxHeight = body.scrollHeight + "px";
+        }
+    }
+
+    function toggleAll(expand) {
+        const items = document.querySelectorAll(".accordion-item");
+        items.forEach(item => {
+            const body = item.querySelector(".accordion-body");
+            if (expand) {
+                if (item.style.display !== "none") {
+                    item.classList.add("active");
+                    body.style.maxHeight = body.scrollHeight + "px";
+                }
+            } else {
+                item.classList.remove("active");
+                body.style.maxHeight = null;
+            }
+        });
+    }
+
+    function filterAccordions() {
+        const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+        let matchCount = 0;
+
+        lineageMap.forEach((lineage, id) => {
+            const item = document.querySelector(`.accordion-item[data-id="${id}"]`);
+            if (!item) return;
+
+            const themeMatch = lineage.theme.toLowerCase().includes(keyword);
+            const qMatch = lineage.questions.some(q => 
+                q.text.toLowerCase().includes(keyword) || 
+                q.year.toLowerCase().includes(keyword) || 
+                q.qNum.toLowerCase().includes(keyword)
+            );
+
+            if (!keyword || themeMatch || qMatch) {
+                item.style.display = "";
+                matchCount++;
+                
+                // If filtering with a keyword, auto expand matching items
+                if (keyword) {
+                    item.classList.add("active");
+                    const body = item.querySelector(".accordion-body");
+                    body.style.maxHeight = body.scrollHeight + "px";
+                }
+            } else {
+                item.style.display = "none";
+                item.classList.remove("active");
+                const body = item.querySelector(".accordion-body");
+                body.style.maxHeight = null;
+            }
+        });
+
+        document.getElementById("statsSummary").textContent = `表示中: ${matchCount} / ${lineageMap.size} 系統`;
+    }
+
+    function highlightText(text, keyword) {
+        if (!keyword) return text;
+        const re = new RegExp(`(${escapeRegExp(keyword)})`, 'gi');
+        return text.replace(re, '<mark>$1</mark>');
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\`]/g, '\$&');
+    }
+</script>
 </body>
 </html>
