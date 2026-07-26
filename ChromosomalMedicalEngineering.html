@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>染色体医工学 過去問系統樹データ</title>
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="inline-block bg-blue-500/30 text-blue-100 text-xs font-semibold px-2.5 py-1 rounded-full mb-2">
+                        2013年〜2025年度 解析データ
+                    </span>
+                    <h1 class="text-2xl md:text-3xl font-bold">染色体医工学 過去問系統樹</h1>
+                    <p class="text-blue-100 text-sm mt-1">全13系統（2025年出題テーマ全カバー ＆ 3年以上過去系統）</p>
+                </div>
+                <div class="hidden sm:block text-right text-xs opacity-80">
+                    <p>全13系統</p>
+                    <p>全62設問掲載</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Container -->
+        <main class="p-6">
+            <!-- Controls -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+                <div class="relative w-full sm:w-72">
+                    <input type="text" id="searchInput" placeholder="キーワードで検索..." 
+                        class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+                </div>
+                <div class="flex gap-2 w-full sm:w-auto">
+                    <button onclick="toggleAll(true)" class="flex-1 sm:flex-initial px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1">
+                        <i data-lucide="chevrons-down" class="w-3.5 h-3.5"></i> すべて開く
+                    </button>
+                    <button onclick="toggleAll(false)" class="flex-1 sm:flex-initial px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1">
+                        <i data-lucide="chevrons-up" class="w-3.5 h-3.5"></i> すべて閉じる
+                    </button>
+                </div>
+            </div>
+
+            <!-- Accordion List Container -->
+            <div id="accordionContainer" class="space-y-3">
+                <!-- Dynamically rendered via JS -->
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-slate-50 border-t border-slate-200 p-4 text-center text-xs text-slate-500">
+            染色体医工学 過去問系統別データベース
+        </footer>
+    </div>
+
+    <script>
+        // Data loaded from CSV
+        const lineageData = [{"id": "L01", "theme": "ゲノム編集の原理とツール", "items": [{"year": "2016", "question_no": "問8(2)", "text": "ゲノム編集を用いたゲノム改変(削除、挿入)について書け。"}, {"year": "2017", "question_no": "大問3", "text": "ゲノム編集技術のうち、A: Zinc finger nuclease、B: TALEN、C: CRISPR/Cas9のうち一つを選んで、構造の特徴や特異的なDNA配列の認識・切断機能について述べよ。"}, {"year": "2019", "question_no": "問2/問3", "text": "ゲノム編集とは何か簡潔に説明 / ゲノム編集ツールを1つ概略説明"}, {"year": "2021", "question_no": "1", "text": "ゲノム編集とは何か、簡潔に説明しなさい。また、ゲノム編集ツールを1つあげ、その原理を簡潔に説明しなさい。"}, {"year": "2022", "question_no": "1", "text": "ゲノム編集とは何か簡潔に説明せよ。また、ゲノム編集ツールを1つあげ、その原理を簡潔に説明せよ。"}, {"year": "2023", "question_no": "1", "text": "ゲノム編集とは何か簡潔に説明せよ。また、ゲノム編集ツールを1つ挙げ、その原理を簡潔に説明せよ。"}, {"year": "2024", "question_no": "1", "text": "ゲノム編集とは何か簡潔に説明せよ。また、ゲノム編集ツールを1つ挙げ、その原理を簡潔に説明せよ。"}, {"year": "2025", "question_no": "1", "text": "ゲノム編集とは何か簡潔に説明せよ。また、ゲノム編集ツールを1つ挙げ、その原理を簡潔に説明せよ。"}]}, {"id": "L02", "theme": "ヒト単一染色体ライブラリーの応用", "items": [{"year": "2015", "question_no": "(2)", "text": "A9 細胞によるヒト単一染色体ライブラリーとは何か?"}, {"year": "2016", "question_no": "問7", "text": "A9細胞によるヒト単一染色体ライブラリーとは何か"}, {"year": "2021", "question_no": "2", "text": "ヒト染色体ライブラリーのがん研究における応用例の特徴と具体例を述べよ。"}, {"year": "2022", "question_no": "2", "text": "ヒト染色体ライブラリーのがん研究について (1)その特徴を述べよ。(2)具体例を述べよ"}, {"year": "2023", "question_no": "2", "text": "癌研究における単一ヒト染色体ライブラリーの応用について、その特徴と具体例を1つ挙げなさい。"}, {"year": "2025", "question_no": "2", "text": "単一ヒト染色体ライブラリーの応用について、その特徴と具体例を1つ挙げなさい。"}]}, {"id": "L03", "theme": "MMCT/染色体導入と生理的発現制御", "items": [{"year": "2013", "question_no": "問1/問2", "text": "染色体導入法の原理を説明しなさい。/ 染色体解析から分かること、染色体導入技術の利点について述べいてください。"}, {"year": "2015", "question_no": "(3)/(4)", "text": "微小核細胞融合法による染色体導入法について図示せよ。 / 染色体からわかること、および染色体導入技術の利点について述べなさい。"}, {"year": "2016", "question_no": "問10/問11", "text": "レポーター遺伝子を挿入(搭載)するベクターとして、人工染色体ベクターを用いる場合の利点を説明してください。特に長い転写調節領域を含むレポーター遺伝子を解析する際の利点として考えられることを中心に説明してください。 / 染色体解析からわかること。"}, {"year": "2017", "question_no": "大問1/大問5", "text": "レポーター遺伝子を挿入（搭載）するベクターとして、人工染色体ベクターを用いる場合の利点を説明せよ。特に長い転写調節領域を含むレポーター遺伝子を解析する際の利点として考えられることを中心に説明せよ。 / MMCT（微小核細胞融合法）の概略を説明し、問題点と解決するためにはどうすればよいか述べよ。"}, {"year": "2019", "question_no": "問1", "text": "MMCT(微小核細胞融合法)の概略を説明し、問題点と解決策を述べよ。"}, {"year": "2021", "question_no": "8", "text": "MMCTについてゲノムDNAの観点から「制御領域」と「生理的発現制御」を定義づけたうえでその特徴を述べよ。"}, {"year": "2022", "question_no": "3", "text": "MMCT(微小核細胞融合法)の概略を説明せよ。また、その他の遺伝子導入技術(ウイルス、細菌)と比較し、MMCT が優れている点について述べよ。"}, {"year": "2023", "question_no": "3", "text": "MMCTについてゲノムDNAの観点から「制御領域」を定義づけたうえで特徴を述べよ。"}, {"year": "2024", "question_no": "3", "text": "染色体導入法には導入できる遺伝子のサイズに制限がない。このことからゲノム・染色体領域の解析におけるメリットを考えよ。"}, {"year": "2025", "question_no": "3", "text": "人工染色体の特徴として、「制御領域を含めた広い領域を導入することで、導入細胞内で生理的発現制御を解析することができる。」が挙げられる。仮に、遺伝子の発現を調べたいとき、「制御領域を含めた広い領域」はどのように決定すべきか。自分の考えを述べよ。"}]}, {"id": "L04", "theme": "ゲノム合成技術の展望と課題", "items": [{"year": "2019", "question_no": "問10", "text": "ゲノム合成技術の将来展望とその課題を述べよ"}, {"year": "2021", "question_no": "7", "text": "ゲノム合成技術の将来展望とその課題を述べよ"}, {"year": "2022", "question_no": "4", "text": "ゲノム合成技術の将来の展望と課題を挙げよ"}, {"year": "2023", "question_no": "4", "text": "ゲノム合成技術のメリット、デメリットをそれぞれ答えよ。"}, {"year": "2024", "question_no": "4", "text": "ゲノム合成技術とは何か。またその活用法、課題について説明せよ。"}, {"year": "2025", "question_no": "4", "text": "ゲノム合成技術の展望と課題について"}]}, {"id": "L05", "theme": "iPS細胞応用・CAR-T/TCR-T療法", "items": [{"year": "2023", "question_no": "5", "text": "iPS細胞を利用したCAR-T療法 (iCAR-T)について述べよ。"}, {"year": "2024", "question_no": "5", "text": "iPS細胞を利用した CAR-T療法(iCAR-T)について述べよ。"}, {"year": "2025", "question_no": "5", "text": "TCR-T細胞療法とCAR-T細胞療法について説明。課題点も。"}]}, {"id": "L06", "theme": "ダウン症疾患モデル・併発症状", "items": [{"year": "2017", "question_no": "大問6", "text": "ダウン症患者が併発する認知症の特徴を挙げよ。"}, {"year": "2019", "question_no": "問6", "text": "ダウン症患者が併発する認知症の特徴を述べよ"}, {"year": "2021", "question_no": "5", "text": "ダウン症患者が併発する認知症ついて特徴を述べよ。"}, {"year": "2022", "question_no": "6/7", "text": "ダウン症モデルマウス海馬に観察される表現型2つ答えよ / ダウン症患者が併発する認知症ついて特徴を述べよ。"}, {"year": "2023", "question_no": "6/7", "text": "ダウン症モデルマウス海馬に観察される表現型2つ答えよ。 / ダウン症患者が併発する認知症についてその特徴を述べよ"}, {"year": "2025", "question_no": "6", "text": "標準ダウン症について説明。臨床的疾患を二つ。それについて説明も。"}]}, {"id": "L07", "theme": "抗体産生技術・スクリーニング・抗原選択", "items": [{"year": "2015", "question_no": "(10)", "text": "抗体産生技術を二つ以上挙げて、それぞれの特徴を比較しなさい。"}, {"year": "2017", "question_no": "大問4", "text": "ヒト型抗体産生動物の利点とモノクローナル抗体の作り方を述べよ。"}, {"year": "2023", "question_no": "9", "text": "マウスの免疫に使用する抗原として、①タンパク質、②DNA、③目的抗原を発現した細胞、④がん細胞の内から2つを選んで、そのメリットとデメリットについて記述せよ。"}, {"year": "2024", "question_no": "9", "text": "あなたはがん細胞に高発現する抗原Xに対する完全ヒト抗体を作製している。その重要な3つのステップは、①抗原選択 (タンパク質・抗原Xを発現する細胞)、②抗体産生細胞の不死化(ハイブリドーマ・シングル・Bセル・テクノロジーズ)、③スクリーニング(ELISA・免疫細胞染色)。各ステップの1つの選択を選ぶ理由を述べて計画してください。さらに、選ばなかった方法の理由も説明してください。"}, {"year": "2025", "question_no": "7", "text": "スクリーニングの3つのやつ (ELISA や免疫細胞染色)のうち二つ。メリットデメリットを書け。"}]}, {"id": "L08", "theme": "神経系・神経再生・腸内細菌叢", "items": [{"year": "2017", "question_no": "大問6", "text": "神経産生に及ぼす腸内細菌叢の影響を1つ例を挙げて説明せよ。"}, {"year": "2019", "question_no": "問5", "text": "神経産生におよぼす腸内細菌叢の影響を1つ挙げて説明せよ"}, {"year": "2021", "question_no": "4", "text": "腸内細菌叢が神経新生に与える影響について1つ例を挙げよ。"}, {"year": "2025", "question_no": "8", "text": "ヒトiPSCを用いた神経再生治療について (疾患名, 病因, 導入細胞)"}]}, {"id": "L09", "theme": "バイオ医薬品・抗体医薬の知識（穴埋め）", "items": [{"year": "2019", "question_no": "問7/問8", "text": "バイオ医薬品(穴埋め) / リツキシマブについて①抗原②細胞傷害活性③作用機序④HAMA抗体の発現について説明せよ"}, {"year": "2021", "question_no": "3", "text": "里深先生の語群あり穴埋め問題（抗体医薬、オプジーボ、キイトルーダ等）"}, {"year": "2022", "question_no": "8", "text": "(1)バイオ医薬品は(①)等からなる (3)TNFa阻害剤 (4)リツキシマブ/ハーセプチン (5)抗体の種類 (6)ELISA/簡易診断等の穴埋め"}, {"year": "2023", "question_no": "8", "text": "バイオ医薬品、TNFa阻害剤(ヒュミラ等)、抗体依存性細胞傷害、エピトープ、ELISA等の穴埋め（語群選択）"}, {"year": "2024", "question_no": "8", "text": "バイオ医薬品、オプジーボ・キートルーダ、抗体医薬等の穴埋め（語群選択）"}, {"year": "2025", "question_no": "9", "text": "バイオ医薬品、TNFa阻害剤、リツキシマブ・ハーセプチン、エピトープ、ELISA等の穴埋め（語群選択）"}]}, {"id": "L10", "theme": "将来展望・染色体工学技術を用いた新しいアイデア", "items": [{"year": "2013", "question_no": "問3", "text": "人工染色体技術によるモデル動物作製の利点について応用例を交えながら独自の考えを述べよ。"}, {"year": "2015", "question_no": "(5)", "text": "人工染色体技術によるモデル動物作製の利点委ついて応用例を交えながら独自の考えを述べよ。"}, {"year": "2017", "question_no": "大問4/大問7", "text": "人工染色体によるモデルマウス作製の利点について応用例を交えながら独自の考えを述べよ。 / 将来染色体医工学を用いて何ができると思うか。理由と根拠も述べよ。"}, {"year": "2019", "question_no": "問4/問11", "text": "ゲノム編集ツールを用いて、生命現象、疾患、遺伝子などを挙げて自由に考えて記述せよ / 将来染色体医工学を用いて何ができると思うか。理由と根拠も述べよ"}, {"year": "2021", "question_no": "6/9", "text": "人工染色体によるモデルマウス作製の利点について応用例を交えながら独自の考えを述べよ。 / 将来染色体医工学を用いて何ができると思うか。理由と根拠も述べよ"}, {"year": "2022", "question_no": "9", "text": "遺伝子工学技術を用いた新しいアイデアを教えてください。またその理由と根拠を述べなさい。"}, {"year": "2023", "question_no": "10", "text": "遺伝子工学技術を用いた新しいアイデアを教えてください。またその理由と根拠を述べなさい。"}, {"year": "2025", "question_no": "10", "text": "染色体工学技術を用いた新しいアイデアを教えてください。またその理由と根拠を述べなさい。"}]}, {"id": "L11", "theme": "レポーター遺伝子と人工染色体ベクター", "items": [{"year": "2016", "question_no": "問9/問10", "text": "遺伝子工学に使われるレポーター遺伝子の例を2つ挙げ、検出するにはどのように反応をすれば良いのか簡単に説明せよ。 / レポーター遺伝子を挿入(搭載)するベクターとして、人工染色体ベクターを用いる場合の利点を説明してください。"}, {"year": "2017", "question_no": "大問1", "text": "発光レポーター、蛍光レポーター、発色レポーターの例を挙げ、それぞれの反応と検出方法について簡潔に述べよ。レポーター遺伝子を挿入（搭載）するベクターとして、人工染色体ベクターを用いる場合の利点を説明せよ。"}]}, {"id": "L12", "theme": "Cre-loxPシステムとゲノム改変", "items": [{"year": "2013", "question_no": "問6", "text": "Cre-loxP システムの原理と応用方法について簡単に述べなさい。"}, {"year": "2016", "question_no": "問8(1)", "text": "DT細胞を用いた相同組み換え法や Creloxp システムでの遺伝子導入法についてかけ。"}, {"year": "2017", "question_no": "大問2", "text": "Cre-loxPシステムの原理を説明せよ。また、応用例についても述べよ。（計算問題付）"}]}, {"id": "L13", "theme": "ゲノム挿入の起こらないiPS細胞作製法", "items": [{"year": "2013", "question_no": "問8/問10", "text": "iPS 誘導効率を上昇させることができる低分子化合物を一つあげ、どのようなメカニズムで効率を上昇させているか説明せよ。 / フルリプログラミングとダイレクトリプログラミングの例を上げよ。"}, {"year": "2015", "question_no": "(6)", "text": "iPS細胞作製法の中で、ホスト細胞のゲノムDNAを傷つける可能性が低い以下の作成方法(人工染色体, センダイウイルス, トランスポゾン, 合成mRNA, タンパク質)について説明しなさい。"}, {"year": "2016", "question_no": "問5/問6", "text": "ゲノム挿入の起こらないiPS細胞の作成方法を3つ概説せよ / iPS細胞の品質のばらつきの原因を考察せよ"}]}];
+
+        function renderAccordions(data) {
+            const container = document.getElementById('accordionContainer');
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">該当する設問が見つかりませんでした。</div>`;
+                return;
+            }
+
+            data.forEach((lineage) => {
+                const is2025Covered = lineage.items.some(item => item.year === '2025');
+                const badge = is2025Covered 
+                    ? `<span class="bg-emerald-100 text-emerald-800 text-[11px] font-semibold px-2 py-0.5 rounded border border-emerald-200">2025出題</span>`
+                    : `<span class="bg-slate-100 text-slate-600 text-[11px] font-medium px-2 py-0.5 rounded border border-slate-200">3年以上系統</span>`;
+
+                const yearsSummary = lineage.items.map(i => i.year + '年').join(' → ');
+
+                const itemHTML = `
+                    <div class="lineage-card border border-slate-200 rounded-lg overflow-hidden bg-white transition shadow-sm hover:shadow">
+                        <!-- Accordion Header -->
+                        <button onclick="toggleAccordion('${lineage.id}')" class="w-full px-5 py-4 text-left flex items-start sm:items-center justify-between gap-4 bg-slate-50/80 hover:bg-slate-100/80 transition">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap mb-1">
+                                    <span class="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">${lineage.id}</span>
+                                    ${badge}
+                                    <span class="text-xs text-slate-500 font-mono">（計${lineage.items.length}問）</span>
+                                </div>
+                                <h3 class="text-base font-bold text-slate-800 leading-snug">${lineage.theme}</h3>
+                                <p class="text-xs text-slate-500 mt-1 truncate">変遷: ${yearsSummary}</p>
+                            </div>
+                            <div class="pt-1 sm:pt-0">
+                                <i id="icon-${lineage.id}" data-lucide="chevron-down" class="w-5 h-5 text-slate-400 transition-transform duration-200"></i>
+                            </div>
+                        </button>
+
+                        <!-- Accordion Content -->
+                        <div id="content-${lineage.id}" class="hidden border-t border-slate-200 bg-white">
+                            <div class="p-4 sm:p-5 space-y-3">
+                                ${lineage.items.map((item) => `
+                                    <div class="flex gap-3 text-sm p-3 rounded-lg ${item.year === '2025' ? 'bg-emerald-50/60 border border-emerald-200/60' : 'bg-slate-50/60 border border-slate-100'}">
+                                        <div class="flex-shrink-0 w-24">
+                                            <span class="inline-block px-2 py-0.5 font-bold text-xs rounded ${item.year === '2025' ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-white'}">
+                                                ${item.year}年度
+                                            </span>
+                                            <span class="block text-xs font-semibold text-slate-600 mt-1 pl-0.5">
+                                                ${item.question_no}
+                                            </span>
+                                        </div>
+                                        <div class="flex-1 text-slate-700 font-normal leading-relaxed pt-0.5">
+                                            ${item.text}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', itemHTML);
+            });
+
+            lucide.createIcons();
+        }
+
+        function toggleAccordion(id) {
+            const content = document.getElementById(`content-${id}`);
+            const icon = document.getElementById(`icon-${id}`);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function toggleAll(open) {
+            lineageData.forEach(l => {
+                const content = document.getElementById(`content-${l.id}`);
+                const icon = document.getElementById(`icon-${l.id}`);
+                if (content && icon) {
+                    if (open) {
+                        content.classList.remove('hidden');
+                        icon.style.transform = 'rotate(180deg)';
+                    } else {
+                        content.classList.add('hidden');
+                        icon.style.transform = 'rotate(0deg)';
+                    }
+                }
+            });
+        }
+
+        // Search filtering
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (!query) {
+                renderAccordions(lineageData);
+                return;
+            }
+
+            const filtered = lineageData.map(l => {
+                const matchesTheme = l.theme.toLowerCase().includes(query);
+                const matchingItems = l.items.filter(i => 
+                    i.text.toLowerCase().includes(query) || 
+                    i.year.includes(query) || 
+                    i.question_no.toLowerCase().includes(query)
+                );
+
+                if (matchesTheme || matchingItems.length > 0) {
+                    return {
+                        ...l,
+                        items: matchesTheme ? l.items : matchingItems
+                    };
+                }
+                return null;
+            }).filter(Boolean);
+
+            renderAccordions(filtered);
+            toggleAll(true);
+        });
+
+        // Initial render
+        renderAccordions(lineageData);
+    </script>
+</body>
+</html>
